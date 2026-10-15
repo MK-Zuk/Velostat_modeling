@@ -7,6 +7,9 @@ import numpy as np
 def relu_numpy(x):
     return np.maximum(0, x)
 
+def x_save(x):
+    return np.maximum(F, 0.001)
+
 
 # ----------------------------------------------------
 # Podstawowe równania Takaca ZORC
@@ -50,6 +53,26 @@ def takac_zorc_descending_relu(x, a0, A0, xm, A=1, x0=0,y0=0):
     b1 = takac_b1(xm, a0)
     return A*np.tanh((x + a0)-x0) + np.sign(A)*A0*relu_numpy(x-x0) - b1+y0  
 
+# ----------------------------------------------------
+# Równania Takaca wg gemini 
+# ----------------------------------------------------
+
+'''
+R0 to punkt srodka na amplitudzie (przesunięcie w górę)
+A to amplituda (cały wykres jako symetryczny jest 2*A)
+F0 to punkt środka na osi OX
+w współczynnik nachylenia - mniejsza wartość bardziej stromo
+k Współczynnik skali): Mnożnik różnicy potęgowej. Decyduje o amplitudzie (pionowym rozciągnięciu) efektu histerezy w fazie unloading
+p Wkład potęgowy / stopień nieliniowości): Określa, jak szybko zmienia się kształt krzywizny powrotu
+R_rev Rezystancja w punkcie maksymalnej siły
+F_rev Maksymalna siła nacisku
+'''
+
+def takac_loading_curve(F, R0, A, F0, w):
+    return R0 + A * np.tanh((F - F0) / w)
+
+def takac_unloading_continuous(F, k, p, R_rev,F_rev):
+    return R_rev + k * (np.power(x_save(F), -p) - np.power(F_rev, -p))
 
 # ----------------------------------------------------
 # funkcje help
@@ -59,20 +82,20 @@ def help_pl():
     print("Zestaw funkcji krzywych ZORC modelu takaca")
     print("zawiera następujące funkcje:")
     print("podstawowy model takaca symetryczny względem (0,0)")
-    print("takac_zorc_ascending (x, a0, A0, xm)")
-    print("takac_zorc_descending (x, a0, A0, xm)")
-    print("model takaca z przesunięciem środka histerezy:")
-    print("takac_zorc_ascending_extended (x, a0, A0, xm, A=1, x0=0,y0=0)")
-    print("takac_zorc_descending_extended (x, a0, A0, xm, A=1, x0=0,y0=0)")
+    print("\t takac_zorc_ascending (x, a0, A0, xm)")
+    print("\t takac_zorc_descending (x, a0, A0, xm)")
+    print("model takaca z przesunięciem środka histerezy do (x0,y0):")
+    print("\t takac_zorc_ascending_extended (x, a0, A0, xm, A=1, x0=0,y0=0)")
+    print("\t takac_zorc_descending_extended (x, a0, A0, xm, A=1, x0=0,y0=0)")
     print("model takaca z przesunięciem środka histerezy i wyprostowaniem lewej strony funkcją relu:")
-    print("takac_zorc_ascending_relu(x, a0, A0, xm, A=1, x0=0,y0=0)")
-    print("takac_zorc_descending_relu(x, a0, A0, xm, A=1, x0=0,y0=0)")
+    print("\t takac_zorc_ascending_relu(x, a0, A0, xm, A=1, x0=0,y0=0)")
+    print("\t takac_zorc_descending_relu(x, a0, A0, xm, A=1, x0=0,y0=0)")
     print("Parametry wejściowe (model podstawowy):")
-    print("x - zmienna - wektor danych wejściowych")
-    print("a0 - szerokość histerezy")
-    print("A0 - nachylenie prostej poza histerezą")
-    print("xm - punkt zwrotu na osi OX)")
+    print(": x - zmienna - wektor danych wejściowych")
+    print(": a0 - szerokość histerezy")
+    print(": A0 - nachylenie prostej poza histerezą")
+    print(": xm - punkt zwrotu na osi OX)")
     print("Parametry wejściowe (model rozszerzony i relu):")
-    print("A - Ampliduda histerezy (domyślnie = 1)")
-    print("x0 - przesunięcie środka histerezy na osi OX (domyślnie = 0)")
-    print("y0 - przesunięcie środka histerezy na osi OY (domyślnie = 0)")
+    print(": A - Ampliduda histerezy (domyślnie = 1)")
+    print(": x0 - przesunięcie środka histerezy na osi OX (domyślnie = 0)")
+    print(": y0 - przesunięcie środka histerezy na osi OY (domyślnie = 0)")
