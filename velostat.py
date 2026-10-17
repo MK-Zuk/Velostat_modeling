@@ -21,7 +21,7 @@ def pole_oblicz_cisnienie(pole_mm2: float, sila_n: float) -> float:
     raise ValueError("Pole powierzchni nie może wynosić zero.")
   return sila_n / pole_m2
 
-def kolo_oblicz_cisnienie(r_mm: float, sila_n: float) -> float:
+def kolo_r_oblicz_cisnienie(r_mm: float, sila_n: float) -> float:
   """Oblicza ciśnienie wywierane przez koło o danym promieniu.
 
   Parametry:

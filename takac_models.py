@@ -8,7 +8,7 @@ def relu_numpy(x):
     return np.maximum(0, x)
 
 def x_save(x):
-    return np.maximum(F, 0.001)
+    return np.maximum(x, 0.001)
 
 
 # ----------------------------------------------------
