@@ -36,8 +36,8 @@ pip install numpy pandas matplotlib scipy
 ### `takac_models.py`
 
 Models of hysteresis loops based on the Takač ZORC (zero-offset rate-independent
-curve) equations. `x` is the input vector (e.g. force), and all functions are
-vectorised with NumPy.
+curve) equations. `x` is the input vector (e.g. normalised force), and all
+functions are vectorised with NumPy.
 
 **Helper functions**
 
@@ -46,27 +46,51 @@ vectorised with NumPy.
 | `relu_numpy(x)` | Element-wise `max(0, x)`. |
 | `x_save(x)` | Clamps values to a minimum of 0.001 (`np.maximum(x, 0.001)`) to avoid division by zero in power-law terms. |
 
+**Loop-closing constants**
+
+| Function | Description |
+|---|---|
+| `takac_b1(xm, a0)` | `(tanh(xm + a0) − tanh(xm − a0)) / 2`; closes the symmetric loop at the turning point `xm`. |
+| `takac_b1e(xm, a0, A=1)` | Same as `takac_b1`, scaled by the amplitude `A`. |
+| `takac_b3(xm, a0, d0)` | `(tanh(xm + d0 + a0) − tanh(xm + d0 − a0)) / 2`; constant of the biased loop (bias `d0`). |
+| `takac_b4(xm, a0, d0)` | `(tanh(−xm + d0 + a0) − tanh(−xm + d0 − a0)) / 2`; constant of the biased loop. |
+| `takac_bu(x, xm, a0, d0)` | Position-dependent correction for the ascending branch of the biased loop, built from `b3` and `b4`. |
+| `takac_bd(x, xm, a0, d0)` | Position-dependent correction for the descending branch of the biased loop, built from `b3` and `b4`. |
+
+**Unhysteretic and initial-magnetisation curves**
+
+| Function | Description |
+|---|---|
+| `takac_zero(x, a0, A0)` | Unhysteretic (anhysteretic) curve: `(tanh(x + a0) + tanh(x − a0)) / 2 + A0·x`. |
+| `takac_virgin(x, C3)` | Virgin (first-loading) curve: `tanh(x)·(1 − 2·C3·sech²(x))`. |
+
 **Basic Takač model (symmetric about (0, 0))**
 
 | Function | Description |
 |---|---|
-| `takac_b1(xm, a0)` | Offset term `(tanh(xm + a0) − tanh(xm − a0)) / 2` closing the loop at the turning point `xm`. |
 | `takac_zorc_ascending(x, a0, A0, xm)` | Ascending (loading) branch: `tanh(x − a0) + A0·x + b1`. |
 | `takac_zorc_descending(x, a0, A0, xm)` | Descending (unloading) branch: `tanh(x + a0) + A0·x − b1`. |
+
+**Biased model (loop shifted by the constant field `d0`)**
+
+| Function | Description |
+|---|---|
+| `takac_zorc_biased_ascending(x, a0, A0, xm, d0)` | Ascending branch: `tanh(x − a0) + A0·x + bu`. |
+| `takac_zorc_biased_descending(x, a0, A0, xm, d0)` | Descending branch: `tanh(x + a0) + A0·x + bd`. |
 
 **Extended model (loop centre shifted to (x0, y0), amplitude A)**
 
 | Function | Description |
 |---|---|
-| `takac_zorc_ascending_extended(x, a0, A0, xm, A=1, x0=0, y0=0)` | Ascending branch with amplitude and centre shift. |
-| `takac_zorc_descending_extended(x, a0, A0, xm, A=1, x0=0, y0=0)` | Descending branch with amplitude and centre shift. |
+| `takac_zorc_ascending_extended(x, a0, A0, xm, A=1, x0=0, y0=0)` | Ascending branch with amplitude and centre shift (uses `b1e`). |
+| `takac_zorc_descending_extended(x, a0, A0, xm, A=1, x0=0, y0=0)` | Descending branch with amplitude and centre shift (uses `b1e`). |
 
 **ReLU model (linear slope `A0` applied only on the right side of the loop)**
 
 | Function | Description |
 |---|---|
-| `takac_zorc_ascending_relu(x, a0, A0, xm, A=1, x0=0, y0=0)` | Ascending branch; linear term uses `relu(x − x0)`. |
-| `takac_zorc_descending_relu(x, a0, A0, xm, A=1, x0=0, y0=0)` | Descending branch; linear term uses `relu(x − x0)`. |
+| `takac_zorc_ascending_relu(x, a0, A0, xm, A=1, x0=0, y0=0)` | Ascending branch; linear term uses `relu(x − x0)` (uses `b1e`). |
+| `takac_zorc_descending_relu(x, a0, A0, xm, A=1, x0=0, y0=0)` | Descending branch; linear term uses `relu(x − x0)` (uses `b1e`). |
 
 **Loading / unloading model for resistance vs. force**
 
@@ -83,6 +107,8 @@ vectorised with NumPy.
 | `a0` | Hysteresis width. |
 | `A0` | Slope of the line outside the hysteresis. |
 | `xm` | Turning point on the x-axis. |
+| `d0` | Constant (bias) field shifting the loop in the biased model. |
+| `C3` | Shape coefficient of the virgin curve. |
 | `A` | Hysteresis amplitude (default 1). |
 | `x0`, `y0` | Shift of the loop centre along the x and y axes (default 0). |
 | `R0` | Vertical offset (centre level) of the loading curve. |
@@ -96,7 +122,7 @@ vectorised with NumPy.
 
 | Function | Description |
 |---|---|
-| `help_pl()` | Prints a short summary of the available functions and parameters (in Polish). |
+| `help_pl()` | Prints a short summary (in Polish) of the ZORC loop functions (basic, biased, extended, ReLU) and their parameters. It does not yet cover the unhysteretic/virgin curves, the `b*` constants or the loading/unloading model; see this README. |
 
 ### `velostat.py`
 
@@ -170,6 +196,19 @@ from takac_models import takac_zorc_ascending, takac_zorc_descending
 x = np.linspace(-3, 3, 200)
 y_up = takac_zorc_ascending(x, a0=0.5, A0=0.1, xm=3)
 y_down = takac_zorc_descending(x, a0=0.5, A0=0.1, xm=3)
+```
+
+**Biased loop and virgin curve**
+
+```python
+import numpy as np
+from takac_models import (takac_zorc_biased_ascending,
+                          takac_zorc_biased_descending, takac_virgin)
+
+x = np.linspace(-3, 3, 200)
+y_up = takac_zorc_biased_ascending(x, a0=0.5, A0=0.1, xm=3, d0=0.2)
+y_down = takac_zorc_biased_descending(x, a0=0.5, A0=0.1, xm=3, d0=0.2)
+y_virgin = takac_virgin(x, C3=0.3)
 ```
 
 **Pressure and unit conversion**
