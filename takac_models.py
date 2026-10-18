@@ -100,11 +100,11 @@ def takac_zorc_descending_extended(x, a0, A0, xm, A=1, x0=0,y0=0):
 # ----------------------------------------------------
 
 def takac_zorc_ascending_relu(x, a0, A0, xm, A=1, x0=0,y0=0):
-    b1 = takac_b1(xm, a0)
+    b1e = takac_b1e(xm, a0, A)
     return A * np.tanh((x - a0)-x0) + np.sign(A)*A0*relu_numpy(x-x0) + b1e+y0
 
 def takac_zorc_descending_relu(x, a0, A0, xm, A=1, x0=0,y0=0):
-    b1 = takac_b1(xm, a0)
+    b1e = takac_b1e(xm, a0, A)
     return A*np.tanh((x + a0)-x0) + np.sign(A)*A0*relu_numpy(x-x0) - b1e+y0  
 
 # ----------------------------------------------------
