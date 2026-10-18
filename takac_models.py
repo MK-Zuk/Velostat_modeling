@@ -18,7 +18,7 @@ def x_save(x):
 def takac_b1(xm, a0):
     return (np.tanh(xm+a0) - np.tanh(xm-a0))/2
 
-def takac_b1e(xm, a0, A):
+def takac_b1e(xm, a0, A=1):
     return A*(np.tanh(xm+a0) - np.tanh(xm-a0))/2
 
 def takac_b3(xm, a0, d0):
@@ -86,11 +86,11 @@ def takac_zorc_biased_descending(x, a0, A0, xm, d0):
 # ----------------------------------------------------
 
 def takac_zorc_ascending_extended(x, a0, A0, xm, A=1, x0=0,y0=0):
-    b1e = takac_b1e(xm, a0)
+    b1e = takac_b1e(xm, a0, A)
     return A * np.tanh((x - a0)-x0) + np.sign(A)*A0*x + b1e+y0
 
 def takac_zorc_descending_extended(x, a0, A0, xm, A=1, x0=0,y0=0):
-    b1e = takac_b1e(xm, a0)
+    b1e = takac_b1e(xm, a0, A)
     return A*np.tanh((x + a0)-x0) + np.sign(A)*A0*x - b1e+y0
 
 
