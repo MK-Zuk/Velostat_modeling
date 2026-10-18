@@ -45,6 +45,16 @@ def takac_bu(x, xm, a0, d0):
     b4_denominator = (np.tanh(xm+d0+a0)-np.tanh(-xm+d0+a0))
     return ((b3*b3_numerator/b3_denominator) + (b4*b4_numerator/b4_denominator))
 
+# ----------------------------------------------------
+# Równania Takaca unhysteretic
+# ----------------------------------------------------
+
+def takac_zero(x, a0):
+    return (np.tanh(x + a0)+np.tanh(x - a0))/2
+
+def takac_virgin(x, C3):
+    sech = 1/(np.cosh(x))
+    return ( np.tanh(x)*(1-2*C3*(sech*sech)) )
 
 # ----------------------------------------------------
 # Podstawowe równania Takaca ZORC
