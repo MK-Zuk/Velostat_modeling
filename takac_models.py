@@ -31,12 +31,12 @@ def takac_bu(x, xm, a0, d0):
     b3 = takac_b3(xm, a0, d0)
     b4 = takac_b4(xm, a0, d0)
     b3_numerator = np.tanh(-xm+d0-a0)
-    b3_denominator = np.tanh(-xm+d0-a0) - np.tanh(xm+d0-a0)
+    b3_denominator = (np.tanh(-xm+d0-a0) - np.tanh(xm+d0-a0))
     b4_numerator = (np.tanh(xm+d0-a0)-np.tanh(x-a0))
     b4_denominator = (np.tanh(xm+d0-a0)-np.tanh(-xm+d0-a0))
     return ((b3*b3_numerator/b3_denominator) + (b4*b4_numerator/b4_denominator))
 
-def takac_bu(x, xm, a0, d0):
+def takac_bd(x, xm, a0, d0):
     b3 = takac_b3(xm, a0, d0)
     b4 = takac_b4(xm, a0, d0)
     b3_numerator = (np.tanh(-xm+d0+a0)-np.tanh(x+a0))
@@ -78,7 +78,7 @@ def takac_zorc_biased_ascending(x, a0, A0, xm, d0):
     return np.tanh(x - a0) + A0*x + bu
 
 def takac_zorc_biased_descending(x, a0, A0, xm, d0):
-    bd = takac_bu(x, xm, a0, d0)
+    bd = takac_bd(x, xm, a0, d0)
     return np.tanh(x + a0) + A0*x + bd
 
 # ----------------------------------------------------
@@ -86,11 +86,11 @@ def takac_zorc_biased_descending(x, a0, A0, xm, d0):
 # ----------------------------------------------------
 
 def takac_zorc_ascending_extended(x, a0, A0, xm, A=1, x0=0,y0=0):
-    b1 = takac_b1(xm, a0)
+    b1e = takac_b1e(xm, a0)
     return A * np.tanh((x - a0)-x0) + np.sign(A)*A0*x + b1e+y0
 
 def takac_zorc_descending_extended(x, a0, A0, xm, A=1, x0=0,y0=0):
-    b1 = takac_b1(xm, a0)
+    b1e = takac_b1e(xm, a0)
     return A*np.tanh((x + a0)-x0) + np.sign(A)*A0*x - b1e+y0
 
 
