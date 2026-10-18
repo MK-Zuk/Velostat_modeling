@@ -79,7 +79,7 @@ def takac_zorc_biased_ascending(x, a0, A0, xm, d0):
 
 def takac_zorc_biased_descending(x, a0, A0, xm, d0):
     bd = takac_bu(x, xm, a0, d0)
-    return np.tanh(x - a0) + A0*x + bd
+    return np.tanh(x + a0) + A0*x + bd
 
 # ----------------------------------------------------
 # Równania Takaca z przesunięciem środka pętli o x0, y0
