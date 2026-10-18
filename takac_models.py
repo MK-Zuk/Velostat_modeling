@@ -49,8 +49,8 @@ def takac_bu(x, xm, a0, d0):
 # Równania Takaca unhysteretic
 # ----------------------------------------------------
 
-def takac_zero(x, a0):
-    return (np.tanh(x + a0)+np.tanh(x - a0))/2
+def takac_zero(x, a0, A0):
+    return (np.tanh(x + a0)+np.tanh(x - a0))/2 + A0*x
 
 def takac_virgin(x, C3):
     sech = 1/(np.cosh(x))
