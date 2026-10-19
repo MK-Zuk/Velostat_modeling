@@ -93,11 +93,11 @@ def takac_zorc_biased_descending(x, a0, A0, xm, d0):
 # ----------------------------------------------------
 
 def takac_zorc_ascending_extended(x, a0, A0, xm, A=1, x0=0,y0=0):
-    b1e = takac_b1ee(xm, a0, A)
+    b1e = takac_b1ee(xm, a0, A, x0)
     return A * np.tanh((x - a0)-x0) + np.sign(A)*A0*x + b1e+y0
 
 def takac_zorc_descending_extended(x, a0, A0, xm, A=1, x0=0,y0=0):
-    b1e = takac_b1ee(xm, a0, A)
+    b1e = takac_b1ee(xm, a0, A, x0)
     return A*np.tanh((x + a0)-x0) + np.sign(A)*A0*x - b1e+y0
 
 
@@ -107,11 +107,11 @@ def takac_zorc_descending_extended(x, a0, A0, xm, A=1, x0=0,y0=0):
 # ----------------------------------------------------
 
 def takac_zorc_ascending_relu(x, a0, A0, xm, A=1, x0=0,y0=0):
-    b1e = takac_b1ee(xm, a0, A)
+    b1e = takac_b1ee(xm, a0, A, x0)
     return A * np.tanh((x - a0)-x0) + np.sign(A)*A0*relu_numpy(x-x0) + b1e+y0
 
 def takac_zorc_descending_relu(x, a0, A0, xm, A=1, x0=0,y0=0):
-    b1e = takac_b1ee(xm, a0, A)
+    b1e = takac_b1ee(xm, a0, A, x0)
     return A*np.tanh((x + a0)-x0) + np.sign(A)*A0*relu_numpy(x-x0) - b1e+y0  
 
 # ----------------------------------------------------
