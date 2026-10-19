@@ -1,0 +1,96 @@
+% ============================================================
+% takac_equations.txt - equations implemented in takac_models.py (LaTeX)
+% Notation follows the code: x, x_m (xm), a_0 (a0), A_0 (A0), d_0 (d0), C_3 (C3),
+% A, x_0 (x0), y_0 (y0), b_1, b_{1e}, b_{1ee}, b_3, b_4, b_u (bu), b_d (bd).
+% Numbers in \tag{} are the equation numbers of the reference book:
+% Jeno Takacs, Mathematics of Hysteretic Phenomena, Wiley-VCH, 2003.
+% "OWN" marks own extensions that are not in the book.
+% Requires: \usepackage{amsmath}
+% ============================================================
+
+% ---------- Basic ZORC: takac_zorc_ascending, takac_zorc_descending, takac_b1 ----------
+\begin{align}
+  f_{+} &= \tanh(x - a_0) + A_0\,x + b_1 && \text{increasing } x \tag{3.1a}\\
+  f_{-} &= \tanh(x + a_0) + A_0\,x - b_1 && \text{decreasing } x \tag{3.1b}
+\end{align}
+\begin{equation}
+  b_1 = \frac{\tanh(x_m + a_0) - \tanh(x_m - a_0)}{2} \tag{3.2}
+\end{equation}
+
+% ---------- Generalised tanh (book: B_0, C_0) ----------
+% In the code B_0 corresponds to A and C_0 = 1 (there is no C_0 parameter).
+% Implemented only for C_0 = 1: takac_b1e (b_{1e}), see (3.7) below.
+\begin{align}
+  f_{+} &= B_0 \tanh\!\left[C_0 (x - a_0)\right] + A_0\,x + b_1 && \text{increasing } x \tag{3.6a}\\
+  f_{-} &= B_0 \tanh\!\left[C_0 (x + a_0)\right] + A_0\,x - b_1 && \text{decreasing } x \tag{3.6b}
+\end{align}
+\begin{equation}
+  b_1 = \frac{B_0\left\{\tanh\!\left[C_0 (x_m + a_0)\right] - \tanh\!\left[C_0 (x_m - a_0)\right]\right\}}{2} \tag{3.7}
+\end{equation}
+
+% takac_b1e: (3.7) with B_0 = A, C_0 = 1
+\begin{equation}
+  b_{1e} = \frac{A\left[\tanh(x_m + a_0) - \tanh(x_m - a_0)\right]}{2} \tag{3.7, $B_0=A,\ C_0=1$}
+\end{equation}
+
+% ---------- Biased loop: takac_b3, takac_b4, takac_bu, takac_bd ----------
+% Code notation (b_3, b_4). In the later paper by the same author the constants are
+% renamed b_2 = b_3 (here), b_3 = b_4 (here), b_{10} = b_u, b_{20} = b_d.
+\begin{align}
+  b_3 &= \frac{\tanh(x_m + d_0 + a_0) - \tanh(x_m + d_0 - a_0)}{2} \tag{3.8}\\
+  b_4 &= \frac{\tanh(-x_m + d_0 + a_0) - \tanh(-x_m + d_0 - a_0)}{2} \tag{3.9}
+\end{align}
+% (3.10a) in the corrected form (numerator of the b_3 term contains the difference with tanh(x-a_0))
+\begin{align}
+  b_u &= b_3\,\frac{\tanh(-x_m + d_0 - a_0) - \tanh(x - a_0)}{\tanh(-x_m + d_0 - a_0) - \tanh(x_m + d_0 - a_0)} \nonumber\\
+      &\quad + b_4\,\frac{\tanh(x_m + d_0 - a_0) - \tanh(x - a_0)}{\tanh(x_m + d_0 - a_0) - \tanh(-x_m + d_0 - a_0)} \tag{3.10a}\\[1ex]
+  b_d &= b_3\,\frac{\tanh(-x_m + d_0 + a_0) - \tanh(x + a_0)}{\tanh(-x_m + d_0 + a_0) - \tanh(x_m + d_0 + a_0)} \nonumber\\
+      &\quad + b_4\,\frac{\tanh(x_m + d_0 + a_0) - \tanh(x + a_0)}{\tanh(x_m + d_0 + a_0) - \tanh(-x_m + d_0 + a_0)} \tag{3.10b}
+\end{align}
+
+% takac_zorc_biased_ascending, takac_zorc_biased_descending
+% (the loop closes at x = -x_m + d_0 and x = x_m + d_0)
+\begin{align}
+  f_{+} &= \tanh(x - a_0) + b_u + A_0\,x \tag{3.11a}\\
+  f_{-} &= \tanh(x + a_0) - b_d + A_0\,x \tag{3.11b}
+\end{align}
+
+% ---------- Virgin and unhysteretic curves ----------
+% takac_virgin (4.1), takac_virgin_extended (4.3), takac_zero (4.6)
+\begin{align}
+  f_v &= \tanh x\left[1 - 2 C_3 (\operatorname{sech} x)^2\right] \tag{4.1}\\
+  f_v &= \tanh x\left[1 - 2 C_3 (\operatorname{sech} x)^2\right] + A_0\,x \tag{4.3}\\
+  f_s &= A_0\,x + \frac{\tanh(x + a_0) + \tanh(x - a_0)}{2} \tag{4.6}
+\end{align}
+% (4.7): f_s without the linear term = takac_zero with A_0 = 0
+\begin{equation}
+  f_s = \frac{\tanh(x + a_0) + \tanh(x - a_0)}{2} \tag{4.7}
+\end{equation}
+
+% ============================================================
+% OWN extensions (not in the book)
+% ============================================================
+
+% takac_b1ee: closing constant of the shifted loop (closes the loop at x = x_m)
+\begin{equation}
+  b_{1ee} = \frac{A\left[\tanh(x_m - x_0 + a_0) - \tanh(x_m - x_0 - a_0)\right]}{2} \tag{OWN-1}
+\end{equation}
+
+% takac_zorc_ascending_extended / takac_zorc_descending_extended
+% (b_{1e} in the code should be computed as b_{1ee}(x_m, a_0, A, x_0))
+\begin{align}
+  f_{+} &= A \tanh\!\left[(x - a_0) - x_0\right] + \operatorname{sgn}(A)\,A_0\,x + b_{1ee} + y_0 \tag{OWN-2a}\\
+  f_{-} &= A \tanh\!\left[(x + a_0) - x_0\right] + \operatorname{sgn}(A)\,A_0\,x - b_{1ee} + y_0 \tag{OWN-2b}
+\end{align}
+
+% takac_zorc_ascending_relu / takac_zorc_descending_relu
+\begin{align}
+  f_{+} &= A \tanh\!\left[(x - a_0) - x_0\right] + \operatorname{sgn}(A)\,A_0\,\max(0,\,x - x_0) + b_{1ee} + y_0 \tag{OWN-3a}\\
+  f_{-} &= A \tanh\!\left[(x + a_0) - x_0\right] + \operatorname{sgn}(A)\,A_0\,\max(0,\,x - x_0) - b_{1ee} + y_0 \tag{OWN-3b}
+\end{align}
+
+% takac_loading_curve, takac_unloading_continuous (x_save(F) = max(F, 0.001))
+\begin{align}
+  R_{\mathrm{load}}(F)   &= R_0 + A \tanh\!\left(\frac{F - F_0}{w}\right) \tag{OWN-4}\\
+  R_{\mathrm{unload}}(F) &= R_{rev} + k\left[\max(F,\,0.001)^{-p} - F_{rev}^{-p}\right] \tag{OWN-5}
+\end{align}

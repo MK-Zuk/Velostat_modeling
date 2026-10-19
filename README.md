@@ -1,7 +1,7 @@
 # Velostat_modeling
 
 Python tools and example measurement data for modelling the force–resistance
-behaviour of Velostat-based pressure sensors, including hysteresis (Takač-type
+behaviour of Velostat-based pressure sensors, including hysteresis (Takács-type
 ZORC curves) and the Mullins effect (stress-softening after conditioning cycles).
 
 ## Repository structure
@@ -16,8 +16,11 @@ ZORC curves) and the Mullins effect (stress-softening after conditioning cycles)
 │       ├── Series 05.csv
 │       ├── Series 10.csv
 │       └── Series 17.csv
-├── takac_models.py     # Hysteresis (ZORC) curve models and loading/unloading models
-└── velostat.py         # Pressure calculation and SI-prefix conversion helpers
+├── takac_models.py        # Hysteresis (ZORC) curve models and loading/unloading models
+├── takac_equations.txt    # LaTeX source of all implemented equations
+├── velostat.py            # Pressure calculation and SI-prefix conversion helpers
+├── LICENSE                # GNU GPL v3.0
+└── README.md
 ```
 
 ## Requirements
@@ -35,9 +38,13 @@ pip install numpy pandas matplotlib scipy
 
 ### `takac_models.py`
 
-Models of hysteresis loops based on the Takač ZORC (zero-offset rate-independent
-curve) equations. `x` is the input vector (e.g. normalised force), and all
-functions are vectorised with NumPy.
+Models of hysteresis loops based on the Takács T(x) model (ZORC = zero-offset
+rate-independent curves). `x` is the input vector (e.g. normalised force), and
+all functions are vectorised with NumPy. The equations are listed in LaTeX in
+[`takac_equations.txt`](takac_equations.txt). Equation numbers `(x.y)` in the
+tables below refer to the reference book (Jenő Takács, *Mathematics of Hysteretic
+Phenomena*, Wiley-VCH, 2003); functions marked **own** are extensions that are
+not in the book.
 
 **Helper functions**
 
@@ -48,51 +55,56 @@ functions are vectorised with NumPy.
 
 **Loop-closing constants**
 
-| Function | Description |
-|---|---|
-| `takac_b1(xm, a0)` | `(tanh(xm + a0) − tanh(xm − a0)) / 2`; closes the symmetric loop at the turning point `xm`. |
-| `takac_b1e(xm, a0, A=1)` | Same as `takac_b1`, scaled by the amplitude `A`. |
-| `takac_b3(xm, a0, d0)` | `(tanh(xm + d0 + a0) − tanh(xm + d0 − a0)) / 2`; constant of the biased loop (bias `d0`). |
-| `takac_b4(xm, a0, d0)` | `(tanh(−xm + d0 + a0) − tanh(−xm + d0 − a0)) / 2`; constant of the biased loop. |
-| `takac_bu(x, xm, a0, d0)` | Position-dependent correction for the ascending branch of the biased loop, built from `b3` and `b4`. |
-| `takac_bd(x, xm, a0, d0)` | Position-dependent correction for the descending branch of the biased loop, built from `b3` and `b4`. |
+| Function | Eq. | Description |
+|---|---|---|
+| `takac_b1(xm, a0)` | (3.2) | `(tanh(xm + a0) − tanh(xm − a0)) / 2`; closes the symmetric loop at the turning point `xm`. |
+| `takac_b1e(xm, a0, A=1)` | (3.7) | Same as `takac_b1`, scaled by the amplitude `A` (book formula with `B0 = A`, `C0 = 1`). |
+| `takac_b1ee(xm, a0, A=1, x0=0)` | own | `A·(tanh(xm − x0 + a0) − tanh(xm − x0 − a0)) / 2`; closes the loop at `xm` when the loop centre is shifted by `x0`. |
+| `takac_b3(xm, a0, d0)` | (3.8) | `(tanh(xm + d0 + a0) − tanh(xm + d0 − a0)) / 2`; constant of the biased loop (bias `d0`). |
+| `takac_b4(xm, a0, d0)` | (3.9) | `(tanh(−xm + d0 + a0) − tanh(−xm + d0 − a0)) / 2`; constant of the biased loop. |
+| `takac_bu(x, xm, a0, d0)` | (3.10a) | Position-dependent correction for the ascending branch of the biased loop, built from `b3` and `b4` (corrected form). |
+| `takac_bd(x, xm, a0, d0)` | (3.10b) | Position-dependent correction for the descending branch of the biased loop, built from `b3` and `b4`. |
 
 **Unhysteretic and initial-magnetisation curves**
 
-| Function | Description |
-|---|---|
-| `takac_zero(x, a0, A0)` | Unhysteretic (anhysteretic) curve: `(tanh(x + a0) + tanh(x − a0)) / 2 + A0·x`. |
-| `takac_virgin(x, C3)` | Virgin (first-loading) curve: `tanh(x)·(1 − 2·C3·sech²(x))`. |
+| Function | Eq. | Description |
+|---|---|---|
+| `takac_zero(x, a0, A0)` | (4.6) | Unhysteretic curve: `(tanh(x + a0) + tanh(x − a0)) / 2 + A0·x`. With `A0 = 0` it gives (4.7). |
+| `takac_virgin(x, C3)` | (4.1) | Virgin (first-loading) curve: `tanh(x)·(1 − 2·C3·sech²(x))`. |
+| `takac_virgin_extended(x, C3, A0)` | (4.3) | Virgin curve with a linear term: `tanh(x)·(1 − 2·C3·sech²(x)) + A0·x`. |
 
-**Basic Takač model (symmetric about (0, 0))**
+**Basic Takács model (symmetric about (0, 0))**
 
-| Function | Description |
-|---|---|
-| `takac_zorc_ascending(x, a0, A0, xm)` | Ascending (loading) branch: `tanh(x − a0) + A0·x + b1`. |
-| `takac_zorc_descending(x, a0, A0, xm)` | Descending (unloading) branch: `tanh(x + a0) + A0·x − b1`. |
+| Function | Eq. | Description |
+|---|---|---|
+| `takac_zorc_ascending(x, a0, A0, xm)` | (3.1a) | Ascending (loading) branch: `tanh(x − a0) + A0·x + b1`. |
+| `takac_zorc_descending(x, a0, A0, xm)` | (3.1b) | Descending (unloading) branch: `tanh(x + a0) + A0·x − b1`. |
 
 **Biased model (loop shifted by the constant field `d0`)**
 
-| Function | Description |
-|---|---|
-| `takac_zorc_biased_ascending(x, a0, A0, xm, d0)` | Ascending branch: `tanh(x − a0) + A0·x + bu`. |
-| `takac_zorc_biased_descending(x, a0, A0, xm, d0)` | Descending branch: `tanh(x + a0) + A0·x + bd`. |
+| Function | Eq. | Description |
+|---|---|---|
+| `takac_zorc_biased_ascending(x, a0, A0, xm, d0)` | (3.11a) | Ascending branch: `tanh(x − a0) + A0·x + bu`. |
+| `takac_zorc_biased_descending(x, a0, A0, xm, d0)` | (3.11b) | Descending branch: `tanh(x + a0) + A0·x − bd`. The branches meet at `x = −xm + d0` and `x = xm + d0`. |
 
-**Extended model (loop centre shifted to (x0, y0), amplitude A)**
-
-| Function | Description |
-|---|---|
-| `takac_zorc_ascending_extended(x, a0, A0, xm, A=1, x0=0, y0=0)` | Ascending branch with amplitude and centre shift (uses `b1e`). |
-| `takac_zorc_descending_extended(x, a0, A0, xm, A=1, x0=0, y0=0)` | Descending branch with amplitude and centre shift (uses `b1e`). |
-
-**ReLU model (linear slope `A0` applied only on the right side of the loop)**
+**Extended model (loop centre shifted to (x0, y0), amplitude A) — own**
 
 | Function | Description |
 |---|---|
-| `takac_zorc_ascending_relu(x, a0, A0, xm, A=1, x0=0, y0=0)` | Ascending branch; linear term uses `relu(x − x0)` (uses `b1e`). |
-| `takac_zorc_descending_relu(x, a0, A0, xm, A=1, x0=0, y0=0)` | Descending branch; linear term uses `relu(x − x0)` (uses `b1e`). |
+| `takac_zorc_ascending_extended(x, a0, A0, xm, A=1, x0=0, y0=0)` | Ascending branch with amplitude and centre shift. Generalises (3.6a) with `B0 = A`, `C0 = 1`. |
+| `takac_zorc_descending_extended(x, a0, A0, xm, A=1, x0=0, y0=0)` | Descending branch with amplitude and centre shift. Generalises (3.6b). |
 
-**Loading / unloading model for resistance vs. force**
+**ReLU model (linear slope `A0` applied only on the right side of the loop) — own**
+
+| Function | Description |
+|---|---|
+| `takac_zorc_ascending_relu(x, a0, A0, xm, A=1, x0=0, y0=0)` | Ascending branch; linear term uses `relu(x − x0)`. |
+| `takac_zorc_descending_relu(x, a0, A0, xm, A=1, x0=0, y0=0)` | Descending branch; linear term uses `relu(x − x0)`. |
+
+Both the extended and the ReLU functions use the closing constant `b1ee(xm, a0, A, x0)`
+so that the two branches meet at the turning point `xm` also for `x0 ≠ 0`.
+
+**Loading / unloading model for resistance vs. force — own**
 
 | Function | Description |
 |---|---|
@@ -211,6 +223,18 @@ y_down = takac_zorc_biased_descending(x, a0=0.5, A0=0.1, xm=3, d0=0.2)
 y_virgin = takac_virgin(x, C3=0.3)
 ```
 
+**Shifted loop (own extension)**
+
+```python
+import numpy as np
+from takac_models import (takac_zorc_ascending_extended,
+                          takac_zorc_descending_extended)
+
+x = np.linspace(-3, 3, 200)
+y_up = takac_zorc_ascending_extended(x, a0=0.5, A0=0.1, xm=3, A=2, x0=0.3, y0=0.2)
+y_down = takac_zorc_descending_extended(x, a0=0.5, A0=0.1, xm=3, A=2, x0=0.3, y0=0.2)
+```
+
 **Pressure and unit conversion**
 
 ```python
@@ -232,6 +256,10 @@ p_kpa = konwertuj_przedrostki(p_pa, "", "k")           # kPa
 
 If you use this code or data, please cite the related publication (to be added).
 
+The ZORC / T(x) model equations are taken from:
+Jenő Takács, *Mathematics of Hysteretic Phenomena*, Wiley-VCH, 2003.
+
 ## License
 
-To be added.
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
+See the [LICENSE](LICENSE) file for details.
