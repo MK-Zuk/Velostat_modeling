@@ -1,5 +1,4 @@
 import numpy as np
-import math as m
 from scipy.special import expit
 
 # ----------------------------------------------------
@@ -9,10 +8,10 @@ from scipy.special import expit
 
 
 def Fermi_Dirac(x, k, A=1, x0=0):
-    return A * (explit(k*(x-x0)) +1)
+    return A * (expit(-k*(x-x0)) +1)
 
 def Fermi_Dirac_extended(x, k, A0=0, A=1, x0=0):
-    return A * (explit(k*(x-x0)) +1) + A0*x
+    return A * (expit(-k*(x-x0)) +1) + A0*x
     
  
 # ----------------------------------------------------
@@ -21,18 +20,18 @@ def Fermi_Dirac_extended(x, k, A0=0, A=1, x0=0):
 # ----------------------------------------------------
  
 def Fermi_Dirac_ascending(x, k, a0=0, A=1):
-    return A * (explit(k*(x-a0)) +1)
+    return A * (expit(-k*(x-a0)) +1)
 
 def Fermi_Dirac_descending(x, k, a0=0, A=1):
-    return A * (explit(k*(x+a0)) +1)
+    return A * (expit(-k*(x+a0)) +1)
 
 
 
 def Fermi_Dirac_ascending_extended(x, k, a0=0, A0=0, A=1, x0=0, y0=0):
-    return A * (explit(k*((x-a0)-x0)) +1) + A0*x + y0
+    return A * (expit(-k*((x-a0)-x0)) +1) + A0*x + y0
     
 def Fermi_Dirac_descending_extended(x, k, a0=0, A0=0, A=1, x0=0, y0=0):
-    return A * (explit(k*((x+a0)-x0)) +1) + A0*x + y0
+    return A * (expit(-k*((x+a0)-x0)) +1) + A0*x + y0
 
 
 
