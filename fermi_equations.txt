@@ -1,0 +1,38 @@
+% ============================================================
+% fermi_equations.txt - Fermi-Dirac functions from equations.py (LaTeX)
+% Notation follows the code: x, k, A, a_0 (a0), A_0 (A0), x_0 (x0), y_0 (y0).
+% Implementation: A * (expit(-k * (...)) + 1), expit(z) = 1/(1 + e^{-z}),
+% so A * (expit(-z) + 1) = A / (e^{z} + 1) + A (power form used below).
+% The curves decrease from 2A to A (for A_0 = 0, y_0 = 0).
+% Requires: \usepackage{amsmath}
+% ============================================================
+
+% ---------- Fermi_Dirac (no hysteresis, no linear term) ----------
+% x_0 is the position of the mid-point
+\begin{equation}
+  f(x) = \frac{A}{e^{\,k\,(x - x_0)} + 1} + A \tag{FD-1}
+\end{equation}
+
+% ---------- Fermi_Dirac_extended (linear term A_0 x, vertical shift y_0) ----------
+\begin{equation}
+  f(x) = \frac{A}{e^{\,k\,(x - x_0)} + 1} + A + A_0\,x + y_0 \tag{FD-2}
+\end{equation}
+
+% ---------- Fermi_Dirac_ascending, Fermi_Dirac_descending ----------
+% two hysteresis branches, loop centred at x = 0, half-width a_0, no linear term
+\begin{align}
+  f_{+}(x) &= \frac{A}{e^{\,k\,(x - a_0)} + 1} + A \tag{FD-3a}\\[1ex]
+  f_{-}(x) &= \frac{A}{e^{\,k\,(x + a_0)} + 1} + A \tag{FD-3b}
+\end{align}
+
+% ---------- Fermi_Dirac_ascending_extended, Fermi_Dirac_descending_extended ----------
+% linear term A_0 x, loop centre shifted to x = x_0, vertical shift y_0
+\begin{align}
+  f_{+}(x) &= \frac{A}{e^{\,k\,[(x - a_0) - x_0]} + 1} + A + A_0\,x + y_0 \tag{FD-4a}\\[1ex]
+  f_{-}(x) &= \frac{A}{e^{\,k\,[(x + a_0) - x_0]} + 1} + A + A_0\,x + y_0 \tag{FD-4b}
+\end{align}
+
+% ---------- Mid-points of the branches (A_0 = 0): f = 3A/2 + y_0 ----------
+\begin{equation}
+  x_{+} = x_0 + a_0, \qquad x_{-} = x_0 - a_0 \tag{FD-5}
+\end{equation}

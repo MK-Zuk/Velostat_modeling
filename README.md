@@ -18,6 +18,8 @@ ZORC curves) and the Mullins effect (stress-softening after conditioning cycles)
 │       └── Series 17.csv
 ├── takac_models.py        # Hysteresis (ZORC) curve models and loading/unloading models
 ├── takac_equations.txt    # LaTeX source of all implemented equations
+├── equations.py           # Fermi–Dirac (logistic) curves
+├── fermi_equations.txt    # LaTeX source of the Fermi–Dirac equations
 ├── velostat.py            # Pressure calculation and SI-prefix conversion helpers
 ├── LICENSE                # GNU GPL v3.0
 └── README.md
@@ -26,9 +28,10 @@ ZORC curves) and the Mullins effect (stress-softening after conditioning cycles)
 ## Requirements
 
 - Python 3.8+
-- NumPy (`takac_models.py`)
+- NumPy (`takac_models.py`, `equations.py`)
+- SciPy (`equations.py`, uses `scipy.special.expit`)
 - Standard library only for `velostat.py` (`math`)
-- Optional for analysis: pandas, matplotlib, SciPy (e.g. `scipy.optimize.curve_fit`)
+- Optional for analysis: pandas, matplotlib (and SciPy, e.g. `scipy.optimize.curve_fit`)
 
 ```bash
 pip install numpy pandas matplotlib scipy
@@ -136,6 +139,39 @@ so that the two branches meet at the turning point `xm` also for `x0 ≠ 0`.
 |---|---|
 | `help_pl()` | Prints a short summary (in Polish) of the ZORC loop functions (basic, biased, extended, ReLU) and their parameters. It does not yet cover the unhysteretic/virgin curves, the `b*` constants or the loading/unloading model; see this README. |
 
+### `equations.py`
+
+Fermi–Dirac (logistic) curves, an alternative to the tanh-based Takács models.
+The equations are listed in LaTeX in [`fermi_equations.txt`](fermi_equations.txt).
+The argument order follows `takac_models.py`: `x`, shape parameters (`k`, `a0`,
+`A0`), then optional parameters (`A`, `x0`, `y0`). The functions use
+`scipy.special.expit`, with `expit(z) = 1 / (1 + e^(−z))`.
+
+| Function | Description |
+|---|---|
+| `Fermi_Dirac(x, k, A=1, x0=0)` | Fermi–Dirac curve; `x0` is the position of the mid-point. |
+| `Fermi_Dirac_extended(x, k, A0=0, A=1, x0=0, y0=0)` | The same curve plus a linear term `A0·x` and a vertical shift `y0`. |
+| `Fermi_Dirac_ascending(x, k, a0=0, A=1)` | Ascending branch of a hysteresis loop: argument `k·(x − a0)`. |
+| `Fermi_Dirac_descending(x, k, a0=0, A=1)` | Descending branch: argument `k·(x + a0)`. |
+| `Fermi_Dirac_ascending_extended(x, k, a0=0, A0=0, A=1, x0=0, y0=0)` | Ascending branch with linear term `A0·x`, loop centre shifted to `x0` and vertical shift `y0`. |
+| `Fermi_Dirac_descending_extended(x, k, a0=0, A0=0, A=1, x0=0, y0=0)` | Descending branch with the same extensions. |
+| `help_pl()` | Prints a short description of the parameters (in Polish). |
+
+| Symbol | Meaning |
+|---|---|
+| `k` | Slope of the transition (larger value gives a steeper curve). |
+| `A` | Amplitude of the curve (default 1). |
+| `A0` | Amplitude of the linear part (slope outside the transition). |
+| `a0` | Half-width of the loop: the mid-points of the branches are at `x0 + a0` and `x0 − a0`. |
+| `x0` | Shift of the loop centre along the x axis (in x units, independent of `k`). |
+| `y0` | Vertical shift (default 0). |
+
+For `a0 = 0` the two branches coincide. Note that the current implementation
+returns `A · (expit(−k·(…)) + 1)`, i.e. a decreasing curve with a constant offset
+equal to `A` (values from `2A` down to `A` before adding `A0·x` and `y0`), and
+that `help_pl()` exists both in `takac_models.py` and in `equations.py`, so import
+the modules (not `*`) to avoid name clashes.
+
 ### `velostat.py`
 
 | Function | Description |
@@ -233,6 +269,18 @@ from takac_models import (takac_zorc_ascending_extended,
 x = np.linspace(-3, 3, 200)
 y_up = takac_zorc_ascending_extended(x, a0=0.5, A0=0.1, xm=3, A=2, x0=0.3, y0=0.2)
 y_down = takac_zorc_descending_extended(x, a0=0.5, A0=0.1, xm=3, A=2, x0=0.3, y0=0.2)
+```
+
+**Fermi–Dirac hysteresis branches**
+
+```python
+import numpy as np
+from equations import (Fermi_Dirac_ascending_extended,
+                       Fermi_Dirac_descending_extended)
+
+x = np.linspace(-5, 5, 1001)
+y_up = Fermi_Dirac_ascending_extended(x, k=2, a0=0.8, A=3, x0=0.5)
+y_down = Fermi_Dirac_descending_extended(x, k=2, a0=0.8, A=3, x0=0.5)
 ```
 
 **Pressure and unit conversion**
